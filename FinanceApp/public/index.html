@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Finance - Painel Financeiro Premium</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon">▲</div>
+                <div class="logo-text">
+                    <h1>Antigravity</h1>
+                    <span>Finance</span>
+                </div>
+            </div>
+            <div class="system-status">
+                <span class="status-indicator connected" id="statusIndicator"></span>
+                <span class="status-text" id="statusText">Conectado à API (SQLite)</span>
+            </div>
+        </header>
+
+        <!-- Main Layout Grid -->
+        <main class="dashboard-grid">
+            
+            <!-- Column 1: Financial Analytics and Goal -->
+            <section class="grid-col sidebar">
+                
+                <!-- Balance & Summary Cards -->
+                <div class="summary-cards">
+                    <div class="card balance-card">
+                        <div class="card-label">Saldo Líquido</div>
+                        <div class="card-value" id="netBalance">R$ 0,00</div>
+                        <div class="card-trend" id="balanceTrend">Balanço geral da sua conta</div>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <div class="card income-card">
+                            <div class="card-icon">↙</div>
+                            <div class="card-info">
+                                <div class="card-label">Receitas</div>
+                                <div class="card-value" id="totalIncome">R$ 0,00</div>
+                            </div>
+                        </div>
+                        
+                        <div class="card expense-card">
+                            <div class="card-icon">↗</div>
+                            <div class="card-info">
+                                <div class="card-label">Despesas</div>
+                                <div class="card-value" id="totalExpense">R$ 0,00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Savings Goal Card -->
+                <div class="card goal-card">
+                    <div class="card-header-row">
+                        <h3>Meta de Economia</h3>
+                        <button class="icon-button" id="btnEditGoal" title="Editar Meta">✎</button>
+                    </div>
+                    <div class="goal-progress-container">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="goalProgressBar" style="width: 0%"></div>
+                        </div>
+                        <div class="goal-text-row">
+                            <span id="savedAmountText">R$ 0,00</span>
+                            <span class="muted">de</span>
+                            <span id="targetAmountText">R$ 0,00</span>
+                        </div>
+                        <div class="goal-percent" id="goalPercentText">0% atingido</div>
+                    </div>
+                    
+                    <!-- Goal Edit Form (hidden by default) -->
+                    <form id="goalForm" class="hidden">
+                        <div class="form-group-row">
+                            <div class="form-input-wrapper">
+                                <label for="inputTargetAmount">Valor Meta</label>
+                                <input type="number" id="inputTargetAmount" step="0.01" required>
+                            </div>
+                            <div class="form-input-wrapper">
+                                <label for="inputSavedAmount">Já Economizado</label>
+                                <input type="number" id="inputSavedAmount" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="form-actions-row">
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnCancelGoal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary btn-sm">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Expense Chart Card -->
+                <div class="card chart-card">
+                    <h3>Gastos por Categoria</h3>
+                    <div class="chart-container">
+                        <!-- SVG chart injected dynamically by app.js -->
+                        <div id="chartContainer" class="svg-chart-wrapper">
+                            <svg width="180" height="180" viewBox="0 0 36 36" class="donut-chart" id="expenseDonutChart">
+                                <circle class="donut-hole" cx="18" cy="18" r="15.91549430918954" fill="transparent"></circle>
+                                <circle class="donut-ring" cx="18" cy="18" r="15.91549430918954" fill="transparent" stroke="#222f46" stroke-width="3"></circle>
+                                <!-- Segments will be added here dynamically -->
+                            </svg>
+                        </div>
+                        <div class="chart-legend" id="chartLegend">
+                            <!-- Legend items injected dynamically -->
+                            <div class="no-chart-data">Nenhuma despesa cadastrada.</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Database Info Card -->
+                <div class="card info-card">
+                    <h3>Status do Banco de Dados</h3>
+                    <div class="info-list">
+                        <div class="info-item">
+                            <span>SGBD:</span>
+                            <strong>SQLite 3.46.1</strong>
+                        </div>
+                        <div class="info-item">
+                            <span>Tipo:</span>
+                            <span class="badge badge-success">Banco de Dados Externo Local</span>
+                        </div>
+                        <div class="info-item">
+                            <span>Arquivo:</span>
+                            <span class="code">finance.db</span>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Column 2: Transactions List and Controls -->
+            <section class="grid-col main-content">
+                
+                <!-- Controls and Search Panel -->
+                <div class="card controls-card">
+                    <div class="controls-top-row">
+                        <h2>Transações Recentes</h2>
+                        <button class="btn btn-primary btn-icon" id="btnOpenAddModal">
+                            <span class="btn-icon-plus">+</span> Nova Transação
+                        </button>
+                    </div>
+                    
+                    <div class="filters-row">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="searchInput" placeholder="Buscar por descrição...">
+                        </div>
+                        
+                        <div class="select-wrapper">
+                            <select id="filterType">
+                                <option value="all">Todos os Tipos</option>
+                                <option value="income">Apenas Receitas</option>
+                                <option value="expense">Apenas Despesas</option>
+                            </select>
+                        </div>
+
+                        <div class="select-wrapper">
+                            <select id="filterCategory">
+                                <option value="all">Todas Categorias</option>
+                                <option value="Alimentação">Alimentação</option>
+                                <option value="Trabalho">Trabalho</option>
+                                <option value="Entretenimento">Entretenimento</option>
+                                <option value="Transporte">Transporte</option>
+                                <option value="Moradia">Moradia</option>
+                                <option value="Saúde">Saúde</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transactions Table Container -->
+                <div class="transactions-container">
+                    <div class="card table-card">
+                        <div class="table-responsive">
+                            <table class="transactions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Descrição</th>
+                                        <th>Categoria</th>
+                                        <th>Data</th>
+                                        <th class="text-right">Valor</th>
+                                        <th class="text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactionsTableBody">
+                                    <!-- Rows injected dynamically by app.js -->
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">Carregando transações...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+        
+        <!-- Add Transaction Modal -->
+        <div class="modal-backdrop hidden" id="transactionModal">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>Nova Transação</h3>
+                    <button class="close-button" id="btnCloseModal">&times;</button>
+                </div>
+                <form id="transactionForm">
+                    <div class="form-group">
+                        <label for="transDescription">Descrição</label>
+                        <input type="text" id="transDescription" placeholder="Ex: Mercado Mensal, Salário Freelancer" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="transAmount">Valor (R$)</label>
+                            <input type="number" id="transAmount" step="0.01" min="0.01" placeholder="0,00" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="transType">Tipo de Lançamento</label>
+                            <select id="transType" required>
+                                <option value="expense">Despesa (Débito)</option>
+                                <option value="income">Receita (Crédito)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="transCategory">Categoria</label>
+                            <select id="transCategory" required>
+                                <option value="Alimentação">Alimentação</option>
+                                <option value="Trabalho">Trabalho</option>
+                                <option value="Entretenimento">Entretenimento</option>
+                                <option value="Transporte">Transporte</option>
+                                <option value="Moradia">Moradia</option>
+                                <option value="Saúde">Saúde</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="transDate">Data</label>
+                            <input type="date" id="transDate" required>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" id="btnCancelModal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Adicionar Transação</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
