@@ -5,6 +5,9 @@ module "eks_al2023" {
   name               = "${local.name}-al2023"
   kubernetes_version = "1.33"
 
+  endpoint_public_access  = true  
+  endpoint_private_access = true
+
   # EKS Addons
   addons = {
     coredns = {}
