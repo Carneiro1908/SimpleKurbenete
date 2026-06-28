@@ -30,8 +30,8 @@ jobs:
       - name: Build, Tag, Push Image to Amazon ECR
         run: | 
           docker build -t mywebsite:v1.0 . 
-          docker tag mywebsite:v1.0 547320736290.dkr.ecr.eu-north-1.amazonaws.com/bar:v1.0
-          docker push 547320736290.dkr.ecr.eu-north-1.amazonaws.com/bar:v1.0
+          docker tag mywebsite:v1.0 547320736290.dkr.ecr.eu-north-1.amazonaws.com/my-app-repo:*
+          docker push 547320736290.dkr.ecr.eu-north-1.amazonaws.com/my-app-repo:*
 
   deploy_eks:
     name: deploy_eks

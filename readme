@@ -1,0 +1,3 @@
+This repo does not use autoscaling because the account been used is freetier, thats the reason many workflows of terraform will fail, 
+how ever, when I say fail, I mean have a error, but the only thing that the error will cause, is the non presense of autoscaling with 
+static computational power

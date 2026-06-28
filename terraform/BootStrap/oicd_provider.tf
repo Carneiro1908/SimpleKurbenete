@@ -33,9 +33,10 @@ resource "aws_iam_role" "github_actions_role" {
 }
 
 # 3. Giving permissions for the role 
-resource "aws_iam_role_policy_attachment" "ecr_policy" {
+
+resource "aws_iam_role_policy_attachment" "github_admin_policy" {
   role       = aws_iam_role.github_actions_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
 # ARN Output to use on the role 
