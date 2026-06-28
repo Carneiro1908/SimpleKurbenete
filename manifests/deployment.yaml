@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finance-app-deployment
+spec:
+  replicas: 2 # Roda duas cópias do seu app para garantir disponibilidade
+  selector:
+    matchLabels:
+      app: finance-app
+  template:
+    metadata:
+      labels:
+        app: finance-app
+    spec:
+      containers:
+      - name: finance-app-container
+        image: 547320736290.dkr.ecr.eu-north-1.amazonaws.com/my-app-repo:latest
+        ports:
+        - containerPort: 80 # Mude para 8080 ou a porta interna que o seu app do FinanceApp usa
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: finance-app-service
+spec:
+  type: LoadBalancer # Cria o IP/Link público da AWS automaticamente
+  selector:
+    app: finance-app
+  ports:
+    - protocol: TCP
+      port: 80       # Porta que você vai acessar no navegador (ex: http://link-da-aws)
+      targetPort: 80 # Deve ser igual à containerPort configurada acima

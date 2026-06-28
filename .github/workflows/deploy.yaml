@@ -1,9 +1,8 @@
 name: Pipeline App CI/CD 
 
 on: 
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    
 
 permissions:
   id-token: write  
@@ -16,27 +15,49 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v4 
 
       - name: "Configure AWS Credentials"
-        uses: aws-actions/configure-aws-credentials@v6.1.0
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::547320736290:role/github-actions-ecr-eks-role
           aws-region: eu-north-1
 
-      - name: Login Amazon ECR and Setup ECR Private Repository
-        uses: aws-actions/amazon-ecr-login@v2.0.1
+      - name: Login Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build, Tag, Push Image to Amazon ECR
         run: | 
-          docker build -t mywebsite:v1.0 . 
-          docker tag mywebsite:v1.0 547320736290.dkr.ecr.eu-north-1.amazonaws.com/my-app-repo:*
-          docker push 547320736290.dkr.ecr.eu-north-1.amazonaws.com/my-app-repo:*
+          docker build -t 547320736290.dkr.ecr.eu-north-1.amazonaws.com/my-app-repo:latest ./FinanceApp 
+          docker push 547320736290.dkr.ecr.eu-north-1.amazonaws.com/my-app-repo:latest
 
   deploy_eks:
     name: deploy_eks
     needs: build_app
-
     runs-on: ubuntu-latest
 
-     
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::547320736290:role/github-actions-ecr-eks-role
+          aws-region: eu-north-1
+
+      # Download and install kubectl
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.33.0' 
+
+      # Authenticate kubectl with your EKS cluster
+      - name: Update Kubeconfig do EKS
+        run: |
+          aws eks update-kubeconfig --region eu-north-1 --name ex-self-mng-al2023
+
+      # Apply the Kubernetes deployment manifest
+      - name: Deploy to EKS
+        run: |
+          kubectl apply -f ./manifests/deployment.yaml
